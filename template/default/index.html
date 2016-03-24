@@ -1,0 +1,38 @@
+{{ define "header" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{{ end }}
+
+{{ define "footer" }}
+<script>
+function neAlloo() {
+    document.getElementById('submit').disabled = true;
+    document.getElementById('error').innerText = "";
+}
+</script>
+</body>
+</html>
+{{ end }}
+
+
+{{ define "index" }}
+{{ template "header" }}
+<div style="padding: 10px; width: 500px; margin: 0 auto">
+    <form action="" method="get">
+        <input name="url" type="text" value="{{.url}}" style="display:block;width: 100%;padding: 5px"/>
+        <input type="submit" value="parse" id="submit" onclick="neAlloo()"/>
+    </form>
+    <div><a href="{{.link}}">Download</a></div>
+
+    <div id="error" style="color: #f00">{{.error}}</div>
+</div>
+{{ template "footer" }}
+{{ end }}
+
+
+
