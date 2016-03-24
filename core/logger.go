@@ -12,7 +12,7 @@ var (
 )
 
 func init() {
-	logFile, err = os.OpenFile("core.log", os.O_CREATE | os.O_RDWR, 0666)
+ё	logFile, err = os.OpenFile("core.log", os.O_APPEND | os.O_CREATE | os.O_RDWR, 0666)
 	if err != nil {
 		log.Printf("error opening file: %v", err)
 		return

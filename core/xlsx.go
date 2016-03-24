@@ -3,9 +3,11 @@ package core
 import (
 	"github.com/tealeg/xlsx"
 	"fmt"
+	"crypto/md5"
+	"encoding/hex"
 )
 
-func SetXlsx(yml YML) {
+func SetXlsx(yml YML, url string) (string, error) {
 	xlsx_file, sheet := xlsx_init()
 
 	row := sheet.AddRow()
@@ -23,7 +25,7 @@ func SetXlsx(yml YML) {
 		xlsx_add(sheet, &Offer)
 	}
 
-	xlsx_save(xlsx_file)
+	return xlsx_save(xlsx_file, url)
 }
 
 func xlsx_add(sheet *xlsx.Sheet, Offer *Offers) {
@@ -49,9 +51,16 @@ func xlsx_init() (file *xlsx.File, sheet *xlsx.Sheet) {
 	return
 }
 
-func xlsx_save(file *xlsx.File) {
-	err := file.Save("tmp/xxxxxxxxxxx.xlsx")
+func xlsx_save(file *xlsx.File, url string) (string, error) {
+
+	hasher := md5.New()
+	hasher.Write([]byte(url))
+	name := hex.EncodeToString(hasher.Sum(nil))
+	name = "tmp/" + name + ".xlsx"
+
+	err := file.Save(name)
 	if err != nil {
-		fmt.Printf("xlsx error: save")
+		return "", err
 	}
+	return name, nil
 }

@@ -12,16 +12,21 @@ import (
 )
 
 func IndexHandle(w http.ResponseWriter, req *http.Request) {
+	core.Config.Get()
+
+	core.LogInf.Println("Handle:", req.RemoteAddr)
+
 	result := make(map[string]string)
 
 	cwd, _ := os.Getwd()
-	//cwd := "/home/byd/www/dev.beforydeath.ru/seo-yml"
-	//fmt.Println(cwd)
-	//fmt.Println(filepath.Join(cwd, "./template/default/index.html"))
+	if core.Config.BasePath != "" {
+		cwd = core.Config.BasePath
+	}
 
 	t, err := template.ParseFiles(filepath.Join(cwd, "./template/default/index.html"))
 	if err != nil {
-		fmt.Println(err)
+		core.LogErr.Println(err.Error())
+		return
 	}
 	url := req.URL.Query().Get("url");
 	result["url"] = url
@@ -29,8 +34,7 @@ func IndexHandle(w http.ResponseWriter, req *http.Request) {
 		t.ExecuteTemplate(w, "index", result)
 		return
 	}
-
-	// http://dev.beforydeath.ru/yml/_export.yml
+	core.LogInf.Println("Get file:", url)
 
 	response, err := http.Get(url)
 	if err != nil {
@@ -54,21 +58,30 @@ func IndexHandle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	core.SetXlsx(yml)
-
-	result["link"] = "tmp/xxxxxxxxxxx.xlsx"
+	name, err := core.SetXlsx(yml, url)
+	if err != nil {
+		core.LogErr.Println(err)
+	}
+	result["link"] = name
 	t.ExecuteTemplate(w, "index", result)
+	core.LogInf.Println("File result:", name)
 
 }
 
 func main() {
-	defer core.LogClose()
-	core.Config.Get()
 
 	http.Handle("/tmp/", http.StripPrefix("/tmp/", http.FileServer(http.Dir("./tmp/"))))
 	http.HandleFunc("/", IndexHandle)
 
+	stoped := func() {
+		core.LogClose()
+		fmt.Println("Server stoped ...")
+		core.LogInf.Println("Server stoped ...")
+	}
+
+	defer stoped()
+
+	core.LogInf.Println("Server started ...")
 	fmt.Println("Server started ...")
-	defer fmt.Println("Server stoped ...")
 	log.Fatal(http.ListenAndServe(":8085", nil))
 }
